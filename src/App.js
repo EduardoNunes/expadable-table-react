@@ -1,25 +1,39 @@
-import logo from './logo.svg';
-import './App.css';
+import * as React from 'react';
+import DataTable from 'react-data-table-component';
+import ExpandedComponent from './ExpandedComponent';
+import { cars, columns } from './data';
 
-function App() {
+function MyComponent() {
+  const carsAno = cars.map(car => ({
+    ...car,
+    disabled: Number(car.ano) < 2015,
+  }));
+
+  const carsMoreExpensive = carsAno.map(car => ({
+    ...car,
+    preco: parseFloat(car.preco.replace('$', '').replace(/,/g, '')),
+  }));
+
+  const mostExpensiveCar = carsMoreExpensive.reduce((maxCar, currentCar) => {
+    return currentCar.preco > maxCar.preco ? currentCar : maxCar;
+  }, carsMoreExpensive[0]);
+
+  const carsWithExpansion = carsMoreExpensive.map(car => ({
+    ...car,
+    defaultExpanded: car === mostExpensiveCar,
+  }));
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <DataTable
+      title="Top 10 carros do mundo"
+      columns={columns}
+      data={carsWithExpansion}
+      expandableRows
+      expandableRowsComponent={ExpandedComponent}
+      expandableRowExpanded={row => row.defaultExpanded}
+      expandableRowDisabled={row => row.disabled}
+    />
   );
 }
 
-export default App;
+export default MyComponent;
